@@ -513,13 +513,13 @@ details[open] summary h4 {
         4px 4px 0px #1e40af,
         5px 5px 10px rgba(0,0,0,0.3);
 ">
-    Bimath: Konstruksi Persegi Ajaib 4×4: Teori Grup & Komputasi Interaktif
+    Bimath: Konstruksi Persegi Ajaib $4\times 4$: Teori Grup & Komputasi Interaktif
 </h2>
         <div class="subtitle">Evolusi Ide Matematika: Dari Andrews (1917) ke Pendekatan Modern Teori Grup</div>
         
 		<div class="collab-hero">
   This work represents a successful and synergistic collaboration between
-  <span>Bimath</span>, <span>DeepSeek</span>, and <span>ChatGPT</span>.
+  <span>Bimath</span>, <span>DeepSeek</span>, <span>ChatGPT</span>, and <span>Google Gemini</span>.
 </div>
 		
         <div class="game-area">
@@ -666,7 +666,7 @@ details[open] summary h4 {
 			    <summary>
                 <h4>1. Konteks Historis: Metode Klasik</h4>
 				</summary>
-                <p>Dalam <em>"Magic Squares and Cubes"</em> (1917), <strong>W.S. Andrews</strong> mendokumentasikan metode konstruksi persegi ajaib 4×4 menggunakan prinsip <strong>"pertukaran pasangan komplemen"</strong>. Metodenya deskriptif:</p>
+                <p>Dalam <a href="https://commons.wikimedia.org/wiki/File:Magic_squares_and_cubes_(IA_magicsquarescube0000wsan).pdf" target="_blank" style="color: white;"><em>"Magic Squares and Cubes"</em> (1917), <strong>W.S. Andrews</strong></a> mendokumentasikan metode konstruksi persegi ajaib 4×4 menggunakan prinsip <strong>"pertukaran pasangan komplemen"</strong>. Metodenya deskriptif:</p>
                 
                 <div class="permutation-display">
                     "Mulai dengan grid urutan 1-16.<br>
@@ -730,7 +730,7 @@ details[open] summary h4 {
                     </ol>
 <p align="justify">
 Secara konseptual, konstruksi ini mengungkap bahwa metode klasik pertukaran pasangan komplemen
-sebenarnya merealisasikan aksi terstruktur dari elemen-elemen involutif dalam
+sebenarnya merealisasikan tindakan terstruktur dari elemen-elemen involutif dalam
 <strong>grup alternating $A_{16}$</strong>. Keberhasilan konstruksi tidak bersifat kebetulan,
 melainkan bergantung pada fakta bahwa hanya komposisi non-trivial di dalam
 <strong>subgrup Klein yang sama</strong> yang menjaga seluruh invarian persegi ajaib.
@@ -748,15 +748,15 @@ melainkan bergantung pada fakta bahwa hanya komposisi non-trivial di dalam
                 <p>Konstruksi ini membangun jembatan antara:</p>
                 <ul>
                     <li><strong>Kombinatorik</strong> (enumerasi persegi ajaib)</li>
-                    <li><strong>Teori Grup</strong> (aksi $A_{16}$ dan $D_4$)</li>
+                    <li><strong>Teori Grup</strong> (tindakan $A_{16}$ dan $D_4$)</li>
                     <li><strong>Geometri</strong> (simetri persegi)</li>
                     <li><strong>Aljabar</strong> (struktur subgrup dan homomorfisme)</li>
                 </ul>
 <p align="justify">
 Dalam kerangka ini, persegi ajaib tidak lagi dipandang sebagai objek numerik tunggal,
-melainkan sebagai <strong>orbit stabil</strong> di bawah aksi grup dihedral $D_4$,
-yang dihasilkan oleh aksi awal dari elemen-elemen terpilih di $A_{16}$.
-Pendekatan ini menyatukan aljabar abstrak dan geometri diskret dalam satu kerangka aksi grup.
+melainkan sebagai <strong>orbit stabil</strong> di bawah tindakan grup dihedral $D_4$,
+yang dihasilkan oleh tindakan awal dari elemen-elemen terpilih di $A_{16}$.
+Pendekatan ini menyatukan aljabar abstrak dan geometri diskret dalam satu kerangka tindakan grup.
 </p>
 
 				
@@ -768,7 +768,7 @@ Pendekatan ini menyatukan aljabar abstrak dan geometri diskret dalam satu kerang
                     sedangkan $a$ dan $c$ tidak.
                 </div>
                 
-                <h5>3.3 Implikasi Komputasional</h5>
+                <h5 style="color: yellow;">3.3 Implikasi Komputasional</h5>
                 <p>Pemahaman struktural ini mengarah ke:</p>
                 <ul>
                     <li><strong>Algoritma lebih efisien</strong> untuk generasi persegi ajaib</li>
@@ -808,7 +808,7 @@ Pendekatan ini menyatukan aljabar abstrak dan geometri diskret dalam satu kerang
                             <tr>
                                 <td class="header-cell">Persegi ajaib</td>
                                 <td style="background: linear-gradient(135deg, rgba(34,197,94,0.8), rgba(21,128,61,0.9)); color: white;">Hijau</td>
-                                <td><strong>Orbit stabil</strong> di bawah aksi $D_4$</td>
+                                <td><strong>Orbit stabil</strong> di bawah tidakan $D_4$</td>
                             </tr>
                         </tbody>
                     </table>
@@ -944,6 +944,7 @@ menjawab pertanyaan mengapa hanya konfigurasi tertentu yang menghasilkan persegi
       font-family: monospace;
       font-size: 18px;
       border: 2px solid #999;
+	  text-align: center;
   ">
     <tr>
       <td style="border:1px solid #999; padding:6px;">1</td>
@@ -981,7 +982,7 @@ menjawab pertanyaan mengapa hanya konfigurasi tertentu yang menghasilkan persegi
                 <p>Secara bersama-sama, $ab$ menciptakan keseimbangan yang sempurna di semua baris, kolom, dan diagonal.</p>
 				
 <p align="justify">
-Dari sudut pandang teori grup, kegagalan komposisi silang seperti $ac$ atau $bd$ bukanlah kegagalan numerik, melainkan kegagalan struktural. Permutasi-permutasi tersebut tidak berada dalam subgrup Klein yang sama, sehingga aksi gabungannya tidak menjaga partisi pasangan komplemen yang diperlukan untuk mempertahankan keseimbangan baris, kolom, dan diagonal.
+Dari sudut pandang teori grup, kegagalan komposisi silang seperti $ac$ atau $bd$ bukanlah kegagalan numerik, melainkan kegagalan struktural. Permutasi-permutasi tersebut tidak berada dalam subgrup Klein yang sama, sehingga tindakan gabungannya tidak menjaga partisi pasangan komplemen yang diperlukan untuk mempertahankan keseimbangan baris, kolom, dan diagonal.
 </p>
 
                 
