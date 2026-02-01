@@ -10,6 +10,7 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <style>
+        /* [Kode CSS sebelumnya tetap sama] */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -90,6 +91,20 @@
             border: 2px solid #60a5fa;
             border-radius: 5px;
             transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+        }
+        
+        .cell.selected {
+            background: rgba(234, 179, 8, 0.4);
+            border-color: #eab308;
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
+            transform: scale(1.05);
         }
         
         .cell.magic {
@@ -107,6 +122,16 @@
             border-color: #16a34a;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .cell.swapping {
+            animation: swapAnimation 0.5s ease;
+        }
+        
+        @keyframes swapAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         
         .controls {
@@ -417,8 +442,8 @@
             color: #60a5fa;
             margin-bottom: 10px;
         }
-        
-        details {
+		
+		details {
             border: 1px solid rgba(99,102,241,0.4);
             border-radius: 10px;
             margin: 12px 0;
@@ -476,6 +501,33 @@
             color: #67e8f9;
             letter-spacing: 0.5px;
         }
+
+        .mouse-controls {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .mouse-controls h4 {
+            color: #a78bfa;
+            margin-bottom: 10px;
+        }
+
+        .mouse-instructions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #93c5fd;
+        }
+
+        .mouse-icon {
+            font-size: 1.2rem;
+        }
+
     </style>
     
     <!-- MathJax configuration -->
@@ -497,7 +549,20 @@
 </head>
 <body>
     <div class="container">
-        <h2 style="text-align: center; margin-bottom: 30px; color: #60a5fa; font-size: 1.6rem; font-weight: bold; text-transform: uppercase; text-shadow: 1px 1px 0px #3b82f6, 2px 2px 0px #2563eb, 3px 3px 0px #1d4ed8, 4px 4px 0px #1e40af, 5px 5px 10px rgba(0,0,0,0.3);">
+        <h2 style="
+            text-align: center; 
+            margin-bottom: 30px; 
+            color: #60a5fa; 
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-shadow: 
+                1px 1px 0px #3b82f6, 
+                2px 2px 0px #2563eb, 
+                3px 3px 0px #1d4ed8, 
+                4px 4px 0px #1e40af,
+                5px 5px 10px rgba(0,0,0,0.3);
+        ">
             Bimath: Konstruksi Persegi Ajaib $4\times 4$: Teori Grup & Komputasi Interaktif
         </h2>
         <div class="subtitle">Evolusi Ide Matematika: Dari Andrews (1917) ke Pendekatan Modern Teori Grup</div>
@@ -516,9 +581,26 @@
                     <div><strong>Status:</strong> <span id="status">Grid angka urut 1-16</span></div>
                     <div><strong>Transformasi:</strong> <span id="current-transform">Identitas</span></div>
                     <div><strong>Komposisi:</strong> <span id="current-composition">$e$</span></div>
+                    <div><strong>Mode:</strong> <span id="mouse-mode">Klik untuk memilih dan menukar angka</span></div>
                 </div>
                 
                 <div class="grid grid-4" id="grid"></div>
+                
+                <div class="mouse-controls">
+                    <h4>Kontrol Mouse</h4>
+                    <p>Klik dua sel berbeda untuk menukar isinya.</p>
+                    <div class="mouse-instructions">
+                        <span class="mouse-icon">🖱️</span>
+                        <span>Klik sel pertama → Klik sel kedua → Tukar otomatis</span>
+                    </div>
+                    <div class="mouse-instructions">
+                        <span class="mouse-icon">🔄</span>
+                        <span>Sel yang dipilih akan berwarna kuning terang</span>
+                    </div>
+                    <button class="perm-btn" onclick="clearSelection()" style="margin-top: 10px; width: 100%;">
+                        Hapus Seleksi
+                    </button>
+                </div>
                 
                 <div class="stats">
                     <div class="stat-item">
@@ -546,6 +628,7 @@
                         <li>Coba komposisi lain (ac, ad, bc, bd) - mereka tidak akan bekerja</li>
                         <li>Setelah dapat persegi ajaib, coba transformasi $D_4$</li>
                         <li>Perhatikan: Grid tetap hijau karena invarian!</li>
+                        <li>Atau gunakan mouse untuk menukar angka secara manual</li>
                     </ol>
                 </div>
             </div>
@@ -615,400 +698,416 @@
             </div>
         </div>
         
-        <!-- Evolusi Ide -->
+        <!Evolusi Ide -->
         <div class="discussion-narrative">
-            <div class="conceptual-summary">
-                <details class="section" closed>
-                    <summary>
-                        <h4>Conceptual Insight</h4>
-                    </summary>
-                    <p align="justify">
-                        Classical constructions of order-4 magic squares are typically presented
-                        as algorithmic recipes without structural justification. In this work, we
-                        develop a group-theoretic framework in which magic squares are characterized
-                        as orbit-stable configurations under the action of the dihedral group
-                        $D_4$, induced by involutive generators in the alternating group
-                        $A_{16}$.
-                    </p>
-                    <p align="justify">
-                        We show that only compositions of involutions within the same Klein
-                        four-subgroup yield magic squares, while mixed compositions fail. This
-                        perspective shifts the construction of magic squares from procedural rules
-                        to algebraic structure, offering new insight into symmetry, invariance, and
-                        generalization.
-                    </p>
+		
+        <div class="conceptual-summary">
+        <details class="section" closed>
+        <summary>
+            <h4>Conceptual Insight</h4>
+        </summary>
+            <p align="justify">
+                Classical constructions of order-4 magic squares are typically presented
+                as algorithmic recipes without structural justification. In this work, we
+                develop a group-theoretic framework in which magic squares are characterized
+                as orbit-stable configurations under the action of the dihedral group
+                \(D_4\), induced by involutive generators in the alternating group
+                \(A_{16}\).
+            </p>
+            <p align="justify">
+                We show that only compositions of involutions within the same Klein
+                four-subgroup yield magic squares, while mixed compositions fail. This
+                perspective shifts the construction of magic squares from procedural rules
+                to algebraic structure, offering new insight into symmetry, invariance, and
+                generalization.
+            </p>
+        </details>
+        </div>
+
+		
+        <details class="section" closed>
+        <summary>
+            <h3>Dari Andrews (1917) ke Pendekatan Modern Teori Grup</h3>
+        </summary>    
+            <div class="historical-context">
+            <details class="subsection" closed>
+                <summary>
+                <h4>1. Konteks Historis: Metode Klasik</h4>
+                </summary>
+                <p>Dalam <a href="https://commons.wikimedia.org/wiki/File:Magic_squares_and_cubes_(IA_magicsquarescube0000wsan).pdf" target="_blank" style="color: white;"><em>"Magic Squares and Cubes"</em> (1917), <strong>W.S. Andrews</strong></a> mendokumentasikan metode konstruksi persegi ajaib 4×4 menggunakan prinsip <strong>"pertukaran pasangan komplemen"</strong>. Metodenya deskriptif:</p>
+                
+                <div class="permutation-display">
+                    "Mulai dengan grid urutan 1-16.<br>
+                    Tukar angka 2 dengan 15, 3 dengan 14,<br>
+                    5 dengan 12, 8 dengan 9, dan beberapa lainnya..."
+                </div>
+                
+                <p>Andrews memberikan <strong>algoritma praktis</strong> tanpa menyelidiki <strong>struktur matematika mendasar</strong> yang menjelaskan mengapa pola pertukaran tertentu bekerja sementara yang lain tidak.</p>
+            </details>
+            </div>
+            
+            <div class="innovation-section">
+            <details class="subsection" closed>
+                <summary>
+                <h4>2. Lompatan Konseptual: Pendekatan Teori Grup</h4>
+                </summary>
+                <p>Diskusi ini mengungkap evolusi dari pendekatan deskriptif ke pendekatan struktural:</p>
+                
+                <div class="group-table-container">
+                    <table class="group-table">
+                        <thead>
+                            <tr>
+                                <th class="header-cell">Aspek</th>
+                                <th>Pendekatan Andrews (1917)</th>
+                                <th>Pendekatan Modern</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="header-cell">Bahasa</td>
+                                <td>Deskriptif: "tukar angka X dan Y"</td>
+                                <td>Struktural: $a = (2,15)(3,14),b = (5,12)(8,9), c = (6,11)(7,10), d = (1,16)(4,13) \in A_{16}$</td>
+                            </tr>
+                            <tr>
+                                <td class="header-cell">Fokus</td>
+                                <td>Algoritma praktis</td>
+                                <td>Struktur aljabar</td>
+                            </tr>
+                            <tr>
+                                <td class="header-cell">Analisis</td>
+                                <td>Pola yang bekerja</td>
+                                <td>Mengapa hanya pola tertentu yang bekerja</td>
+                            </tr>
+                            <tr>
+                                <td class="header-cell">Generalisasi</td>
+                                <td>Resep spesifik</td>
+                                <td>Prinsip umum berdasarkan teori grup</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="theorem">
+                    <h4>Penemuan Kunci</h4>
+                    <p>Keempat permutasi $a,b,c,d$ semuanya:</p>
+                    <ol>
+                        <li>Elemen dari <strong>grup alternating $A_{16}$</strong> (permutasi genap)</li>
+                        <li><strong>Involusi</strong>: $a^2 = b^2 = c^2 = d^2 = e$</li>
+                        <li>Membentuk <strong>dua subgrup Klein</strong>: $\langle a,b \rangle \cong \langle c,d \rangle \cong C_2 \times C_2$</li>
+                        <li>Hanya <strong>produk dalam subgrup yang sama</strong> ($ab$ atau $cd$) yang menghasilkan persegi ajaib</li>
+                    </ol>
+        <p align="justify">
+        Secara konseptual, konstruksi ini mengungkap bahwa metode klasik pertukaran pasangan komplemen
+        sebenarnya merealisasikan tindakan terstruktur dari elemen-elemen involutif dalam
+        <strong>grup alternating $A_{16}$</strong>. Keberhasilan konstruksi tidak bersifat kebetulan,
+        melainkan bergantung pada fakta bahwa hanya komposisi non-trivial di dalam
+        <strong>subgrup Klein yang sama</strong> yang menjaga seluruh invarian persegi ajaib.
+        </p>
+                </div>
                 </details>
             </div>
             
-            <details class="section" closed>
+            <div class="implication-box">
+            <details class="subsection" closed>
                 <summary>
-                    <h3>Dari Andrews (1917) ke Pendekatan Modern Teori Grup</h3>
+                <h4>3. Signifikansi untuk Matematika Modern</h4>
                 </summary>
-                <div class="historical-context">
-                    <details class="subsection" closed>
-                        <summary>
-                            <h4>1. Konteks Historis: Metode Klasik</h4>
-                        </summary>
-                        <p>Dalam <a href="https://commons.wikimedia.org/wiki/File:Magic_squares_and_cubes_(IA_magicsquarescube0000wsan).pdf" target="_blank" style="color: white;"><em>"Magic Squares and Cubes"</em> (1917), <strong>W.S. Andrews</strong></a> mendokumentasikan metode konstruksi persegi ajaib 4×4 menggunakan prinsip <strong>"pertukaran pasangan komplemen"</strong>. Metodenya deskriptif:</p>
-                        
-                        <div class="permutation-display">
-                            "Mulai dengan grid urutan 1-16.<br>
-                            Tukar angka 2 dengan 15, 3 dengan 14,<br>
-                            5 dengan 12, 8 dengan 9, dan beberapa lainnya..."
-                        </div>
-                        
-                        <p>Andrews memberikan <strong>algoritma praktis</strong> tanpa menyelidiki <strong>struktur matematika mendasar</strong> yang menjelaskan mengapa pola pertukaran tertentu bekerja sementara yang lain tidak.</p>
-                    </details>
+                <h5 style="color: yellow;"><b>3.1 Jembatan antara Bidang Matematika</b></h5>
+                <p>Konstruksi ini membangun jembatan antara:</p>
+                <ul>
+                    <li><strong>Kombinatorik</strong> (enumerasi persegi ajaib)</li>
+                    <li><strong>Teori Grup</strong> (tindakan $A_{16}$ dan $D_4$)</li>
+                    <li><strong>Geometri</strong> (simetri persegi)</li>
+                    <li><strong>Aljabar</strong> (struktur subgrup dan homomorfisme)</li>
+                </ul>
+        <p align="justify">
+        Dalam kerangka ini, persegi ajaib tidak lagi dipandang sebagai objek numerik tunggal,
+        melainkan sebagai <strong>orbit stabil</strong> di bawah tindakan grup dihedral $D_4$,
+        yang dihasilkan oleh tindakan awal dari elemen-elemen terpilih di $A_{16}$.
+        Pendekatan ini menyatukan aljabar abstrak dan geometri diskret dalam satu kerangka tindakan grup.
+        </p>
+
+				
+                <h5 style="color: yellow;"><b>3.2 Pendidikan Matematika yang Lebih Dalam</b></h5>
+                <p>Daripada menghafal algoritma, siswa dapat memahami:</p>
+                <div class="permutation-display">
+                    Mengapa $ab$ bekerja tetapi $ac$ tidak?<br>
+                    Karena $a$ dan $b$ berada dalam subgrup yang sama,<br>
+                    sedangkan $a$ dan $c$ tidak.
                 </div>
                 
-                <div class="innovation-section">
-                    <details class="subsection" closed>
-                        <summary>
-                            <h4>2. Lompatan Konseptual: Pendekatan Teori Grup</h4>
-                        </summary>
-                        <p>Diskusi ini mengungkap evolusi dari pendekatan deskriptif ke pendekatan struktural:</p>
-                        
-                        <div class="group-table-container">
-                            <table class="group-table">
-                                <thead>
-                                    <tr>
-                                        <th class="header-cell">Aspek</th>
-                                        <th>Pendekatan Andrews (1917)</th>
-                                        <th>Pendekatan Modern</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="header-cell">Bahasa</td>
-                                        <td>Deskriptif: "tukar angka X dan Y"</td>
-                                        <td>Struktural: $a = (2,15)(3,14), b = (5,12)(8,9), c = (6,11)(7,10), d = (1,16)(4,13) \in A_{16}$</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="header-cell">Fokus</td>
-                                        <td>Algoritma praktis</td>
-                                        <td>Struktur aljabar</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="header-cell">Analisis</td>
-                                        <td>Pola yang bekerja</td>
-                                        <td>Mengapa hanya pola tertentu yang bekerja</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="header-cell">Generalisasi</td>
-                                        <td>Resep spesifik</td>
-                                        <td>Prinsip umum berdasarkan teori grup</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="theorem">
-                            <h4>Penemuan Kunci</h4>
-                            <p>Keempat permutasi $a,b,c,d$ semuanya:</p>
-                            <ol>
-                                <li>Elemen dari <strong>grup alternating $A_{16}$</strong> (permutasi genap)</li>
-                                <li><strong>Involusi</strong>: $a^2 = b^2 = c^2 = d^2 = e$</li>
-                                <li>Membentuk <strong>dua subgrup Klein</strong>: $\langle a,b \rangle \cong \langle c,d \rangle \cong C_2 \times C_2$</li>
-                                <li>Hanya <strong>produk dalam subgrup yang sama</strong> ($ab$ atau $cd$) yang menghasilkan persegi ajaib</li>
-                            </ol>
-                            <p align="justify">
-                                Secara konseptual, konstruksi ini mengungkap bahwa metode klasik pertukaran pasangan komplemen
-                                sebenarnya merealisasikan tindakan terstruktur dari elemen-elemen involutif dalam
-                                <strong>grup alternating $A_{16}$</strong>. Keberhasilan konstruksi tidak bersifat kebetulan,
-                                melainkan bergantung pada fakta bahwa hanya komposisi non-trivial di dalam
-                                <strong>subgrup Klein yang sama</strong> yang menjaga seluruh invarian persegi ajaib.
-                            </p>
-                        </div>
-                    </details>
+                <h5 style="color: yellow;">3.3 Implikasi Komputasional</h5>
+                <p>Pemahaman struktural ini mengarah ke:</p>
+                <ul>
+                    <li><strong>Algoritma lebih efisien</strong> untuk generasi persegi ajaib</li>
+                    <li><strong>Verifikasi cepat</strong> menggunakan properti grup</li>
+                    <li><strong>Generalisasi</strong> ke persegi ajaib $n \times n$</li>
+                </ul>
+                </details>
+            </div>
+            
+            <div class="info-panel">
+            <details class="subsection" closed>
+                <summary>
+                <h4>4. Demonstrasi Visual: Invarian terhadap $D_4$</h4>
+                </summary>
+                <p>Sistem pewarnaan dalam aplikasi ini memberikan bukti visual langsung:</p>
+                
+                <div class="group-table-container">
+                    <table class="group-table">
+                        <thead>
+                            <tr>
+                                <th class="header-cell">Status Grid</th>
+                                <th>Warna</th>
+                                <th>Interpretasi Matematis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="header-cell">Grid awal</td>
+                                <td style="background: rgba(0,0,0,0.5); color: white;">Biru</td>
+                                <td>Orbit trivial di bawah $D_4$</td>
+                            </tr>
+                            <tr>
+                                <td class="header-cell">Sel berubah</td>
+                                <td style="background: rgba(234,179,8,0.2); color: white;">Kuning</td>
+                                <td>Grid belum membentuk orbit penuh</td>
+                            </tr>
+                            <tr>
+                                <td class="header-cell">Persegi ajaib</td>
+                                <td style="background: linear-gradient(135deg, rgba(34,197,94,0.8), rgba(21,128,61,0.9)); color: white;">Hijau</td>
+                                <td><strong>Orbit stabil</strong> di bawah tidakan $D_4$</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 
-                <div class="implication-box">
-                    <details class="subsection" closed>
-                        <summary>
-                            <h4>3. Signifikansi untuk Matematika Modern</h4>
-                        </summary>
-                        <h5 style="color: yellow;"><b>3.1 Jembatan antara Bidang Matematika</b></h5>
-                        <p>Konstruksi ini membangun jembatan antara:</p>
-                        <ul>
-                            <li><strong>Kombinatorik</strong> (enumerasi persegi ajaib)</li>
-                            <li><strong>Teori Grup</strong> (tindakan $A_{16}$ dan $D_4$)</li>
-                            <li><strong>Geometri</strong> (simetri persegi)</li>
-                            <li><strong>Aljabar</strong> (struktur subgrup dan homomorfisme)</li>
-                        </ul>
-                        <p align="justify">
-                            Dalam kerangka ini, persegi ajaib tidak lagi dipandang sebagai objek numerik tunggal,
-                            melainkan sebagai <strong>orbit stabil</strong> di bawah tindakan grup dihedral $D_4$,
-                            yang dihasilkan oleh tindakan awal dari elemen-elemen terpilih di $A_{16}$.
-                            Pendekatan ini menyatukan aljabar abstrak dan geometri diskret dalam satu kerangka tindakan grup.
-                        </p>
-                        
-                        <h5 style="color: yellow;"><b>3.2 Pendidikan Matematika yang Lebih Dalam</b></h5>
-                        <p>Daripada menghafal algoritma, siswa dapat memahami:</p>
-                        <div class="permutation-display">
-                            Mengapa $ab$ bekerja tetapi $ac$ tidak?<br>
-                            Karena $a$ dan $b$ berada dalam subgrup yang sama,<br>
-                            sedangkan $a$ dan $c$ tidak.
-                        </div>
-                        
-                        <h5 style="color: yellow;">3.3 Implikasi Komputasional</h5>
-                        <p>Pemahaman struktural ini mengarah ke:</p>
-                        <ul>
-                            <li><strong>Algoritma lebih efisien</strong> untuk generasi persegi ajaib</li>
-                            <li><strong>Verifikasi cepat</strong> menggunakan properti grup</li>
-                            <li><strong>Generalisasi</strong> ke persegi ajaib $n \times n$</li>
-                        </ul>
-                    </details>
-                </div>
-                
-                <div class="info-panel">
-                    <details class="subsection" closed>
-                        <summary>
-                            <h4>4. Demonstrasi Visual: Invarian terhadap $D_4$</h4>
-                        </summary>
-                        <p>Sistem pewarnaan dalam aplikasi ini memberikan bukti visual langsung:</p>
-                        
-                        <div class="group-table-container">
-                            <table class="group-table">
-                                <thead>
-                                    <tr>
-                                        <th class="header-cell">Status Grid</th>
-                                        <th>Warna</th>
-                                        <th>Interpretasi Matematis</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="header-cell">Grid awal</td>
-                                        <td style="background: rgba(0,0,0,0.5); color: white;">Biru</td>
-                                        <td>Orbit trivial di bawah $D_4$</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="header-cell">Sel berubah</td>
-                                        <td style="background: rgba(234,179,8,0.2); color: white;">Kuning</td>
-                                        <td>Grid belum membentuk orbit penuh</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="header-cell">Persegi ajaib</td>
-                                        <td style="background: linear-gradient(135deg, rgba(34,197,94,0.8), rgba(21,128,61,0.9)); color: white;">Hijau</td>
-                                        <td><strong>Orbit stabil</strong> di bawah tidakan $D_4$</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <p>Fakta bahwa grid tetap hijau setelah transformasi $D_4$ adalah <strong>demonstrasi visual langsung</strong> dari invarian matematis.</p>
-                        
-                        <p align="justify">
-                            Secara formal, jika $M$ adalah grid hasil konstruksi melalui $ab$ atau $cd$,
-                            maka untuk setiap $g \in D_4$, grid $g(M)$ diperoleh dengan
-                            memetakan baris, kolom, dan diagonal ke struktur sejenis.
-                            Karena sifat persegi ajaib didefinisikan melalui relasi jumlah,
-                            dan operasi penjumlahan bersifat komutatif, maka sifat tersebut bersifat <strong>invarian terhadap tindakan $D_4$</strong>.
-                        </p>
-                    </details>
-                </div>
+                <p>Fakta bahwa grid tetap hijau setelah transformasi $D_4$ adalah <strong>demonstrasi visual langsung</strong> dari invarian matematis.</p>
+				
+        <p align="justify">
+        Secara formal, jika $M$ adalah grid hasil konstruksi melalui $ab$ atau $cd$,
+        maka untuk setiap $g \in D_4$, grid $g(M)$ diperoleh dengan
+        memetakan baris, kolom, dan diagonal ke struktur sejenis.
+        Karena sifat persegi ajaib didefinisikan melalui relasi jumlah,
+        dan operasi penjumlahan bersifat komutatif, maka sifat tersebut bersifat <strong>invarian terhadap tindakan $D_4$</strong>.
+        </p>
+				
+				
             </details>
+            </div>
+        </details>
         </div>
         
         <!-- Penjelasan Matematika Lengkap -->
         <div class="math-explanation">
-            <details class="section" closed>
-                <summary>
-                    <h2>Landasan Matematika Lengkap</h2>
-                </summary>
-                <div class="theorem">
-                    <h4>Teorema Fundamental Konstruksi</h4>
-                    <p>Misalkan $a,b,c,d \in A_{16}$ didefinisikan seperti di atas. Maka:</p>
-                    <ol>
-                        <li>$ab$ dan $cd$ menghasilkan persegi ajaib 4×4 dengan jumlah ajaib 34</li>
-                        <li>$ac, ad, bc, bd$ <strong>tidak</strong> menghasilkan persegi ajaib</li>
-                        <li>Untuk setiap $g \in D_4$, $g(ab)$ dan $g(cd)$ juga persegi ajaib</li>
-                        <li>$ab = R_{180} \circ cd$, dimana $R_{180}$ adalah rotasi 180°</li>
-                    </ol>
-                    <p align="justify">
-                        Teorema ini menegaskan bahwa persegi ajaib orde $4$ dapat dipahami sebagai
-                        hasil selektif dari tindakan grup alternating, di mana <strong>struktur subgrup</strong> bukan sekadar pertukaran numerik menentukan keberhasilan konstruksi. Dengan demikian, metode ini bersifat eksplanatoris,
-                        menjawab pertanyaan mengapa hanya konfigurasi tertentu yang menghasilkan persegi ajaib.
-                    </p>
-                </div>
-                
-                <div class="info-panel">
-                    <details class="subsection" closed>
-                        <summary>
-                            <h3>1. Struktur Grup yang Terlibat</h3>
-                        </summary>
-                        <div class="group-table-container">
-                            <table class="group-table">
-                                <thead>
-                                    <tr>
-                                        <th class="header-cell">Grup</th>
-                                        <th>Notasi</th>
-                                        <th>Orde</th>
-                                        <th>Peran</th>
-                                        <th>Struktur</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="header-cell">Grup Simetri</td>
-                                        <td>$S_{16}$</td>
-                                        <td>$16!$</td>
-                                        <td>Semua permutasi angka</td>
-                                        <td>-</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="header-cell">Grup Alternating</td>
-                                        <td>$A_{16}$</td>
-                                        <td>$\frac{16!}{2}$</td>
-                                        <td>Permutasi genap</td>
-                                        <td>Subgrup normal dari $S_{16}$</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="header-cell">Grup Dihedral</td>
-                                        <td>$D_4$</td>
-                                        <td>8</td>
-                                        <td>Simetri geometri</td>
-                                        <td>$\langle r,s \mid r^4=s^2=e, srs=r^{-1}\rangle$</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="header-cell">Subgrup Pembangun</td>
-                                        <td>$\langle a,b \rangle$</td>
-                                        <td>4</td>
-                                        <td>Konstruksi persegi ajaib</td>
-                                        <td>$C_2 \times C_2$ (Klein four-group)</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </details>
-                </div>
-                
-                <div class="info-panel">
-                    <details class="subsection" closed>
-                        <summary>
-                            <h3>2. Bukti Invarian terhadap $D_4$</h3>
-                        </summary>
-                        <p>Misalkan $M$ adalah persegi ajaib hasil konstruksi $ab$ atau $cd$. Untuk setiap $g \in D_4$:</p>
-                        
-                        <div class="mathjax-container">
-                            <p><strong>Bukti untuk rotasi:</strong></p>
-                            <p>Untuk rotasi $R_\theta$, baris menjadi kolom atau urutan terbalik. Karena penjumlahan komutatif, jumlah tetap 34.</p>
-                            
-                            <p><strong>Bukti untuk refleksi:</strong></p>
-                            <p>Refleksi hanya mengubah urutan penjumlahan dalam baris/kolom. Karena penjumlahan komutatif, jumlah tetap 34.</p>
-                            
-                            <p><strong>Diagonal:</strong></p>
-                            <p>Diagonal utama dan anti-diagonal dipertahankan atau dipertukarkan oleh elemen $D_4$, sehingga jumlah diagonal tetap 34.</p>
-                        </div>
-                        
-                        <p>∴ $g(M)$ adalah persegi ajaib untuk semua $g \in D_4$.</p>
-                    </details>
-                </div>
-                
-                <div class="info-panel">
-                    <details class="subsection" closed>
-                        <summary>
-                            <h3>3. Analisis Mengapa Hanya $ab$ dan $cd$ yang Bekerja</h3>
-                        </summary>
-                        <p>Perhatikan struktur grid 4×4:</p>
-                        
-                        <div class="permutation-display">
-                            <div style="text-align:center; margin-bottom:8px; font-weight:bold;">
-                                Grid awal
-                            </div>
-                            
-                            <table style="margin: 0 auto; border-collapse: collapse; font-family: monospace; font-size: 18px; border: 2px solid #999; text-align: center;">
-                                <tr>
-                                    <td style="border:1px solid #999; padding:6px;">1</td>
-                                    <td style="border:1px solid #999; padding:6px;">2</td>
-                                    <td style="border:1px solid #999; padding:6px;">3</td>
-                                    <td style="border:1px solid #999; padding:6px;">4</td>
-                                </tr>
-                                <tr>
-                                    <td style="border:1px solid #999; padding:6px;">5</td>
-                                    <td style="border:1px solid #999; padding:6px;">6</td>
-                                    <td style="border:1px solid #999; padding:6px;">7</td>
-                                    <td style="border:1px solid #999; padding:6px;">8</td>
-                                </tr>
-                                <tr>
-                                    <td style="border:1px solid #999; padding:6px;">9</td>
-                                    <td style="border:1px solid #999; padding:6px;">10</td>
-                                    <td style="border:1px solid #999; padding:6px;">11</td>
-                                    <td style="border:1px solid #999; padding:6px;">12</td>
-                                </tr>
-                                <tr>
-                                    <td style="border:1px solid #999; padding:6px;">13</td>
-                                    <td style="border:1px solid #999; padding:6px;">14</td>
-                                    <td style="border:1px solid #999; padding:6px;">15</td>
-                                    <td style="border:1px solid #999; padding:6px;">16</td>
-                                </tr>
-                            </table>
-                        </div>
-                        
-                        <p>Permutasi $a$ dan $b$ bekerja pada bagian yang berbeda dari grid:</p>
-                        <ul>
-                            <li>$a = (2,15)(3,14)$: menukar elemen di diagonal sekunder</li>
-                            <li>$b = (5,12)(8,9)$: menukar elemen di kuadran tengah</li>
-                        </ul>
-                        
-                        <p>Secara bersama-sama, $ab$ menciptakan keseimbangan yang sempurna di semua baris, kolom, dan diagonal.</p>
-                        
-                        <p align="justify">
-                            Dari sudut pandang teori grup, kegagalan komposisi silang seperti $ac$ atau $bd$ bukanlah kegagalan numerik, melainkan kegagalan struktural. Permutasi-permutasi tersebut tidak berada dalam subgrup Klein yang sama, sehingga tindakan gabungannya tidak menjaga partisi pasangan komplemen yang diperlukan untuk mempertahankan keseimbangan baris, kolom, dan diagonal.
-                        </p>
-                        
-                        <div class="theorem">
-                            <h4>Observasi Kritis</h4>
-                            <p>$ac$ tidak bekerja karena $a$ dan $c$ mengganggu keseimbangan yang diciptakan masing-masing:</p>
-                            <ul>
-                                <li>$a$ mengatur keseimbangan diagonal</li>
-                                <li>$c$ mengatur keseimbangan pusat</li>
-                                <li>Ketika digabungkan, mereka saling mengganggu alih-alih saling melengkapi</li>
-                            </ul>
-                        </div>
-                    </details>
-                </div>
-                
-                <div class="info-panel">
-                    <details class="subsection" closed>
-                        <summary>
-                            <h3>4. Generalisasi dan Masalah Terbuka</h3>
-                        </summary>
-                        <h4 style="color:yellow;">4.1 Untuk $n \times n$ dengan $n$ genap:</h4>
-                        <p>Apakah ada konstruksi serupa menggunakan permutasi dalam $A_{n^2}$?</p>
-                        
-                        <h4 style="color:yellow;">4.2 Klasifikasi berdasarkan Struktur Grup:</h4>
-                        <p>Dapatkah semua persegi ajaib 4×4 diklasifikasikan berdasarkan subgrup dari $S_{16}$ yang menghasilkannya?</p>
-                        
-                        <h4 style="color:yellow;">4.3 Hubungan dengan Kode Koreksi Kesalahan:</h4>
-                        <p>Struktur keseimbangan dalam persegi ajaib mirip dengan kode checksum. Apakah ada hubungan formal?</p>
-                        
-                        <h4 style="color:yellow;">4.4 Aplikasi dalam Pembelajaran Mesin:</h4>
-                        <p>Dapatkah jaringan neural belajar untuk mengidentifikasi struktur grup dari pola numerik?</p>
-                        <br>
-                        <p align="justify">
-                            Pendekatan berbasis tindakan grup ini membuka kemungkinan bahwa konstruksi persegi ajaib dapat dikarakterisasi secara sistematis melalui subgrup tertentu dari $S_{n^2}$, alih-alih melalui pencarian pola atau enumerasi brute-force. Hal ini menggeser fokus penelitian dari objek ke struktur, dan dari algoritma ke invarian.
-                        </p>
-                    </details>
+        <details class="section" closed>
+        <summary>
+            <h2>Landasan Matematika Lengkap</h2>
+        </summary>  
+            <div class="theorem">
+                <h4>Teorema Fundamental Konstruksi</h4>
+                <p>Misalkan $a,b,c,d \in A_{16}$ didefinisikan seperti di atas. Maka:</p>
+                <ol>
+                    <li>$ab$ dan $cd$ menghasilkan persegi ajaib 4×4 dengan jumlah ajaib 34</li>
+                    <li>$ac, ad, bc, bd$ <strong>tidak</strong> menghasilkan persegi ajaib</li>
+                    <li>Untuk setiap $g \in D_4$, $g(ab)$ dan $g(cd)$ juga persegi ajaib</li>
+                    <li>$ab = R_{180} \circ cd$, dimana $R_{180}$ adalah rotasi 180°</li>
+                </ol>
+        <p align="justify">
+        Teorema ini menegaskan bahwa persegi ajaib orde $4$ dapat dipahami sebagai
+        hasil selektif dari tindakan grup alternating, di mana <strong>struktur subgrup</strong> bukan sekadar pertukaran numerik menentukan keberhasilan konstruksi. Dengan demikian, metode ini bersifat eksplanatoris,
+        menjawab pertanyaan mengapa hanya konfigurasi tertentu yang menghasilkan persegi ajaib.
+        </p>
+
+            </div>
+            
+            <div class="info-panel">
+            <details class="subsection" closed>
+            <summary>
+                <h3>1. Struktur Grup yang Terlibat</h3>
+            </summary>    
+                <div class="group-table-container">
+                    <table class="group-table">
+                        <thead>
+                            <tr>
+                                <th class="header-cell">Grup</th>
+                                <th>Notasi</th>
+                                <th>Orde</th>
+                                <th>Peran</th>
+                                <th>Struktur</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="header-cell">Grup Simetri</td>
+                                <td>$S_{16}$</td>
+                                <td>$16!$</td>
+                                <td>Semua permutasi angka</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td class="header-cell">Grup Alternating</td>
+                                <td>$A_{16}$</td>
+                                <td>$\frac{16!}{2}$</td>
+                                <td>Permutasi genap</td>
+                                <td>Subgrup normal dari $S_{16}$</td>
+                            </tr>
+                            <tr>
+                                <td class="header-cell">Grup Dihedral</td>
+                                <td>$D_4$</td>
+                                <td>8</td>
+                                <td>Simetri geometri</td>
+                                <td>$\langle r,s \mid r^4=s^2=e, srs=r^{-1}\rangle$</td>
+                            </tr>
+                            <tr>
+                                <td class="header-cell">Subgrup Pembangun</td>
+                                <td>$\langle a,b \rangle$</td>
+                                <td>4</td>
+                                <td>Konstruksi persegi ajaib</td>
+                                <td>$C_2 \times C_2$ (Klein four-group)</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </details>
+            </div>
+            
+            <div class="info-panel">
+                <details class="subsection" closed>
+                <summary>
+                <h3>2. Bukti Invarian terhadap $D_4$</h3>
+                </summary>
+                <p>Misalkan $M$ adalah persegi ajaib hasil konstruksi $ab$ atau $cd$. Untuk setiap $g \in D_4$:</p>
+                
+                <div class="mathjax-container">
+                    <p><strong>Bukti untuk rotasi:</strong></p>
+                    <p>Untuk rotasi $R_\theta$, baris menjadi kolom atau urutan terbalik. Karena penjumlahan komutatif, jumlah tetap 34.</p>
+                    
+                    <p><strong>Bukti untuk refleksi:</strong></p>
+                    <p>Refleksi hanya mengubah urutan penjumlahan dalam baris/kolom. Karena penjumlahan komutatif, jumlah tetap 34.</p>
+                    
+                    <p><strong>Diagonal:</strong></p>
+                    <p>Diagonal utama dan anti-diagonal dipertahankan atau dipertukarkan oleh elemen $D_4$, sehingga jumlah diagonal tetap 34.</p>
+                </div>
+                
+                <p>∴ $g(M)$ adalah persegi ajaib untuk semua $g \in D_4$.</p>
+            </details>
+            </div>
+            
+            <div class="info-panel">
+                <details class="subsection" closed>
+                <summary>                
+                <h3>3. Analisis Mengapa Hanya $ab$ dan $cd$ yang Bekerja</h3>
+                </summary>
+                <p>Perhatikan struktur grid 4×4:</p>
+                
+        <div class="permutation-display">
+            <div style="text-align:center; margin-bottom:8px; font-weight:bold;">
+                Grid awal
+            </div>
+
+            <table style="
+                margin: 0 auto;
+                border-collapse: collapse;
+                font-family: monospace;
+                font-size: 18px;
+                border: 2px solid #999;
+                text-align: center;
+            ">
+                <tr>
+                <td style="border:1px solid #999; padding:6px;">1</td>
+                <td style="border:1px solid #999; padding:6px;">2</td>
+                <td style="border:1px solid #999; padding:6px;">3</td>
+                <td style="border:1px solid #999; padding:6px;">4</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #999; padding:6px;">5</td>
+                <td style="border:1px solid #999; padding:6px;">6</td>
+                <td style="border:1px solid #999; padding:6px;">7</td>
+                <td style="border:1px solid #999; padding:6px;">8</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #999; padding:6px;">9</td>
+                <td style="border:1px solid #999; padding:6px;">10</td>
+                <td style="border:1px solid #999; padding:6px;">11</td>
+                <td style="border:1px solid #999; padding:6px;">12</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #999; padding:6px;">13</td>
+                <td style="border:1px solid #999; padding:6px;">14</td>
+                <td style="border:1px solid #999; padding:6px;">15</td>
+                <td style="border:1px solid #999; padding:6px;">16</td>
+                </tr>
+            </table>
+        </div>
+                 
+                <p>Permutasi $a$ dan $b$ bekerja pada bagian yang berbeda dari grid:</p>
+                <ul>
+                    <li>$a = (2,15)(3,14)$: menukar elemen di diagonal sekunder</li>
+                    <li>$b = (5,12)(8,9)$: menukar elemen di kuadran tengah</li>
+                </ul>
+                
+                <p>Secara bersama-sama, $ab$ menciptakan keseimbangan yang sempurna di semua baris, kolom, dan diagonal.</p>
+				
+        <p align="justify">
+        Dari sudut pandang teori grup, kegagalan komposisi silang seperti $ac$ atau $bd$ bukanlah kegagalan numerik, melainkan kegagalan struktural. Permutasi-permutasi tersebut tidak berada dalam subgrup Klein yang sama, sehingga tindakan gabungannya tidak menjaga partisi pasangan komplemen yang diperlukan untuk mempertahankan keseimbangan baris, kolom, dan diagonal.
+        </p>
+
+                
+                <div class="theorem">
+                    <h4>Observasi Kritis</h4>
+                    <p>$ac$ tidak bekerja karena $a$ dan $c$ mengganggu keseimbangan yang diciptakan masing-masing:</p>
+                    <ul>
+                        <li>$a$ mengatur keseimbangan diagonal</li>
+                        <li>$c$ mengatur keseimbangan pusat</li>
+                        <li>Ketika digabungkan, mereka saling mengganggu alih-alih saling melengkapi</li>
+                    </ul>
+                </div>
+            </details>
+            </div>
+            
+            <div class="info-panel">
+                <details class="subsection" closed>
+                <summary>
+                <h3>4. Generalisasi dan Masalah Terbuka</h3>
+                </summary>
+                <h4 style="color:yellow;">4.1 Untuk $n \times n$ dengan $n$ genap:</h4>
+                <p>Apakah ada konstruksi serupa menggunakan permutasi dalam $A_{n^2}$?</p>
+                
+                <h4 style="color:yellow;">4.2 Klasifikasi berdasarkan Struktur Grup:</h4>
+                <p>Dapatkah semua persegi ajaib 4×4 diklasifikasikan berdasarkan subgrup dari $S_{16}$ yang menghasilkannya?</p>
+                
+                <h4 style="color:yellow;">4.3 Hubungan dengan Kode Koreksi Kesalahan:</h4>
+                <p>Struktur keseimbangan dalam persegi ajaib mirip dengan kode checksum. Apakah ada hubungan formal?</p>
+                
+                <h4 style="color:yellow;">4.4 Aplikasi dalam Pembelajaran Mesin:</h4>
+                <p>Dapatkah jaringan neural belajar untuk mengidentifikasi struktur grup dari pola numerik?</p>
+            <br>          
+        <p align="justify">
+        Pendekatan berbasis tindakan grup ini membuka kemungkinan bahwa konstruksi persegi ajaib dapat dikarakterisasi secara sistematis melalui subgrup tertentu dari $S_{n^2}$, alih-alih melalui pencarian pola atau enumerasi brute-force. Hal ini menggeser fokus penelitian dari objek ke struktur, dan dari algoritma ke invarian.
+        </p>
+
+			
+            </details>
+            </div>
+        </details>
         </div>
         
         <!-- Bagian Interaktif untuk Eksplorasi -->
         <div class="control-group" style="margin-top: 30px;">
             <details class="section" closed>
-                <summary>
-                    <h3>Eksperimen Lanjutan</h3>
-                </summary>
-                <div class="perm-buttons">
-                    <button class="perm-btn" onclick="experimentComposition('ac')">Coba $ac$</button>
-                    <button class="perm-btn" onclick="experimentComposition('ad')">Coba $ad$</button>
-                    <button class="perm-btn" onclick="experimentComposition('bc')">Coba $bc$</button>
-                    <button class="perm-btn" onclick="experimentComposition('bd')">Coba $bd$</button>
-                    <button class="perm-btn magic" onclick="experimentAll()">Coba Semua Komposisi</button>
-                    <button class="perm-btn reset" onclick="analyzeStructure()">Analisis Struktur</button>
-                </div>
-            </details>
+            <summary>
+            <h3>Eksperimen Lanjutan</h3>
+            </summary>
+            <div class="perm-buttons">
+                <button class="perm-btn" onclick="experimentComposition('ac')">Coba $ac$</button>
+                <button class="perm-btn" onclick="experimentComposition('ad')">Coba $ad$</button>
+                <button class="perm-btn" onclick="experimentComposition('bc')">Coba $bc$</button>
+                <button class="perm-btn" onclick="experimentComposition('bd')">Coba $bd$</button>
+                <button class="perm-btn magic" onclick="experimentAll()">Coba Semua Komposisi</button>
+                <button class="perm-btn reset" onclick="analyzeStructure()">Analisis Struktur</button>
+            </div>
+            </details>	
         </div>
         
         <div id="experiment-results" class="info-panel" style="display: none; margin-top: 20px;">
@@ -1029,6 +1128,10 @@
         let currentComposition = "$e$";
         let isMagicSquare = false;
         let experimentHistory = [];
+        
+        // Variabel untuk kontrol mouse
+        let selectedCells = [];
+        let isMouseSwapEnabled = true;
         
         // Permutasi A₁₆
         const permutations = {
@@ -1053,7 +1156,11 @@
             createOrderedGrid();
             currentGrid = JSON.parse(JSON.stringify(orderedGrid));
             experimentHistory = [];
+            selectedCells = [];
             updateDisplay();
+            
+            // Tambahkan event listener untuk grid
+            setupMouseControls();
         }
         
         function createOrderedGrid() {
@@ -1065,6 +1172,87 @@
                     orderedGrid[i][j] = num++;
                 }
             }
+        }
+        
+        // ================================
+        // SETUP KONTROL MOUSE
+        // ================================
+        function setupMouseControls() {
+            // Event listener akan ditambahkan di renderGrid
+        }
+        
+        function handleCellClick(row, col) {
+            if (!isMouseSwapEnabled) return;
+            
+            // Cek apakah sel sudah dipilih
+            const index = selectedCells.findIndex(cell => cell.row === row && cell.col === col);
+            
+            if (index !== -1) {
+                // Jika sel sudah dipilih, hapus dari seleksi
+                selectedCells.splice(index, 1);
+            } else {
+                // Jika sel belum dipilih, tambahkan ke seleksi
+                selectedCells.push({row, col});
+                
+                // Jika sudah ada 2 sel yang dipilih, lakukan pertukaran
+                if (selectedCells.length === 2) {
+                    swapSelectedCells();
+                }
+            }
+            
+            updateDisplay();
+        }
+        
+        function swapSelectedCells() {
+            if (selectedCells.length !== 2) return;
+            
+            const [cell1, cell2] = selectedCells;
+            
+            // Tukar nilai di grid
+            const temp = currentGrid[cell1.row][cell1.col];
+            currentGrid[cell1.row][cell1.col] = currentGrid[cell2.row][cell2.col];
+            currentGrid[cell2.row][cell2.col] = temp;
+            
+            // Update transform info
+            currentTransform = "Pertukaran dengan Mouse";
+            currentComposition = `Tukar(${currentGrid[cell2.row][cell2.col]}, ${temp})`;
+            
+            // Catat dalam history
+            experimentHistory.push({
+                action: 'mouse-swap',
+                cells: selectedCells,
+                values: [temp, currentGrid[cell1.row][cell1.col]],
+                result: isMagicSquare ? 'magic' : 'not-magic'
+            });
+            
+            // Reset seleksi setelah pertukaran
+            selectedCells = [];
+            
+            // Animasi swap
+            animateSwap(cell1, cell2);
+        }
+        
+        function animateSwap(cell1, cell2) {
+            // Tambahkan class animasi ke sel yang ditukar
+            const grid = document.getElementById('grid');
+            const cells = grid.getElementsByClassName('cell');
+            
+            const index1 = cell1.row * SIZE + cell1.col;
+            const index2 = cell2.row * SIZE + cell2.col;
+            
+            if (cells[index1]) cells[index1].classList.add('swapping');
+            if (cells[index2]) cells[index2].classList.add('swapping');
+            
+            // Hapus class animasi setelah selesai
+            setTimeout(() => {
+                if (cells[index1]) cells[index1].classList.remove('swapping');
+                if (cells[index2]) cells[index2].classList.remove('swapping');
+            }, 500);
+        }
+        
+        function clearSelection() {
+            selectedCells = [];
+            updateDisplay();
         }
         
         // ================================
@@ -1083,6 +1271,15 @@
                     cell.className = 'cell';
                     cell.textContent = currentGrid[i][j];
                     
+                    // Tambahkan event listener untuk klik
+                    cell.addEventListener('click', () => handleCellClick(i, j));
+                    
+                    // Cek apakah sel ini dipilih
+                    const isSelected = selectedCells.some(cell => cell.row === i && cell.col === j);
+                    if (isSelected) {
+                        cell.classList.add('selected');
+                    }
+                    
                     if (isMagicSquare) {
                         cell.classList.add('magic-grid');
                     } else if (currentGrid[i][j] !== orderedGrid[i][j]) {
@@ -1100,6 +1297,12 @@
                 document.getElementById('success-message').style.display = 'none';
                 updateSteps(false);
             }
+            
+            // Update mouse mode display
+            document.getElementById('mouse-mode').textContent = 
+                selectedCells.length === 0 ? 
+                "Klik untuk memilih dan menukar angka" : 
+                `Terpilih: ${selectedCells.length}/2 sel`;
         }
         
         function updateStats() {
@@ -1158,8 +1361,7 @@
                     `Progress: ${correctLines}/${totalLines} garis = 34`;
             }
             
-            // Update MathJax
-            if (window.MathJax && typeof MathJax.typeset === 'function') {
+            if (window.MathJax) {
                 MathJax.typeset();
             }
         }
@@ -1178,7 +1380,10 @@
             currentTransform = `Permutasi ${permType}`;
             currentComposition = permType === 'e' ? '$e$' : 
                 currentComposition === '$e$' ? `$${permType}$` : 
-                `$${currentComposition.slice(1, -1)} \\circ ${permType}$`;
+                `$${currentComposition.slice(1, -1)}\\circ${permType}$`;
+            
+            // Reset seleksi mouse
+            selectedCells = [];
             
             // Catat dalam history
             experimentHistory.push({
@@ -1198,13 +1403,16 @@
                 applyPermutation('a');
                 applyPermutation('b');
                 currentTransform = "Konstruksi $ab$";
-                currentComposition = "$a \\circ b$";
+                currentComposition = "$a\\circ b$";
             } else if (type === 'cd') {
                 applyPermutation('c');
                 applyPermutation('d');
                 currentTransform = "Konstruksi $cd$";
-                currentComposition = "$c \\circ d$";
+                currentComposition = "$c\\circ d$";
             }
+            
+            // Reset seleksi mouse
+            selectedCells = [];
             
             experimentHistory.push({
                 action: 'construction',
@@ -1334,8 +1542,11 @@
             
             if (!isMagicSquare) {
                 const cleanComp = currentComposition.replace(/\$/g, '');
-                currentComposition = `$${cleanComp} \\circ ${transformSymbol}$`;
+                currentComposition = `$${cleanComp}\\circ${transformSymbol}$`;
             }
+            
+            // Reset seleksi mouse
+            selectedCells = [];
             
             experimentHistory.push({
                 action: 'D4-transform',
@@ -1428,6 +1639,7 @@
             currentGrid = JSON.parse(JSON.stringify(orderedGrid));
             currentTransform = "Identitas";
             currentComposition = "$e$";
+            selectedCells = [];
             updateDisplay();
         }
         
@@ -1450,7 +1662,7 @@
             applyPermutation(perm2);
             
             currentTransform = `Eksperimen: ${combo}`;
-            currentComposition = `$${perm1} \\circ ${perm2}$`;
+            currentComposition = `$${perm1}\\circ${perm2}$`;
             
             const result = checkMagicSquare() ? "BERHASIL" : "GAGAL";
             const message = checkMagicSquare() ? 
@@ -1458,7 +1670,7 @@
                 "Tidak menghasilkan persegi ajaib.";
             
             showExperimentResult(
-                `Eksperimen $${perm1} \\circ ${perm2}$: ${result}`,
+                `Eksperimen $${perm1}\\circ${perm2}$: ${result}`,
                 `${message}<br><br>Ini membuktikan bahwa hanya $ab$ dan $cd$ yang bekerja!`
             );
             
@@ -1482,7 +1694,7 @@
                 results.push({
                     combo: combo,
                     magic: isMagic,
-                    display: `$${combo[0]} \\circ ${combo[1]}$: ${isMagic ? '✓' : '✗'}`
+                    display: `$${combo[0]}\\circ${combo[1]}$: ${isMagic ? '✓' : '✗'}`
                 });
             });
             
@@ -1537,7 +1749,7 @@
             
             resultsDiv.style.display = 'block';
             
-            if (window.MathJax && typeof MathJax.typeset === 'function') {
+            if (window.MathJax) {
                 MathJax.typeset();
             }
         }
@@ -1547,33 +1759,36 @@
         // ================================
         window.onload = init;
     </script>
-    
+	
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // SECTION
-            document.querySelectorAll('details.section').forEach(sec => {
-                sec.addEventListener('toggle', () => {
-                    if (sec.open) {
-                        document.querySelectorAll('details.section').forEach(o => {
-                            if (o !== sec) o.removeAttribute('open');
-                        });
-                    }
+    document.addEventListener('DOMContentLoaded', () => {
+    
+        // SECTION
+        document.querySelectorAll('details.section').forEach(sec => {
+            sec.addEventListener('toggle', () => {
+            if (sec.open) {
+                document.querySelectorAll('details.section').forEach(o => {
+                if (o !== sec) o.removeAttribute('open');
                 });
-            });
-            
-            // SUBSECTION
-            document.querySelectorAll('details.section').forEach(sec => {
-                sec.querySelectorAll('details.subsection').forEach(sub => {
-                    sub.addEventListener('toggle', () => {
-                        if (sub.open) {
-                            sec.querySelectorAll('details.subsection').forEach(o => {
-                                if (o !== sub) o.removeAttribute('open');
-                            });
-                        }
-                    });
-                });
+            }
             });
         });
+    
+        // SUBSECTION
+        document.querySelectorAll('details.section').forEach(sec => {
+            sec.querySelectorAll('details.subsection').forEach(sub => {
+            sub.addEventListener('toggle', () => {
+                if (sub.open) {
+                sec.querySelectorAll('details.subsection').forEach(o => {
+                    if (o !== sub) o.removeAttribute('open');
+                });
+                }
+            });
+            });
+        });
+    
+    });
     </script>
+
 </body>
 </html>
