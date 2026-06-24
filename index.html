@@ -6,7 +6,6 @@
     <title>Konstruksi Persegi Ajaib 4×4: Dari Teori Grup ke Implementasi Interaktif</title>
     
     <!-- Load MathJax -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <style>
@@ -442,8 +441,8 @@
             color: #60a5fa;
             margin-bottom: 10px;
         }
-		
-		details {
+        
+        details {
             border: 1px solid rgba(99,102,241,0.4);
             border-radius: 10px;
             margin: 12px 0;
@@ -528,6 +527,147 @@
             font-size: 1.2rem;
         }
 
+        /* ---------- MODAL RINGKASAN ---------- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            animation: fadeInOverlay 0.3s ease;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-card {
+            background: #1a1a2e;
+            color: #e0f2fe;
+            max-width: 900px;
+            width: 94%;
+            max-height: 92vh;
+            border-radius: 20px;
+            padding: 30px 35px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+            overflow-y: auto;
+            position: relative;
+            animation: slideDown 0.4s ease;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-40px) scale(0.97); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .modal-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            line-height: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 10;
+        }
+        .modal-close:hover {
+            transform: scale(1.1) rotate(90deg);
+            background: #c0392b;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: #60a5fa;
+            border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .modal-card h3 {
+            color: #eab308;
+            margin-top: 25px;
+            border-left: 4px solid #eab308;
+            padding-left: 12px;
+        }
+
+        .modal-card h4 {
+            color: #93c5fd;
+            margin-top: 15px;
+        }
+
+        .modal-card p {
+            line-height: 1.7;
+            text-align: justify;
+        }
+
+        .modal-card ul, .modal-card ol {
+            padding-left: 1.8rem;
+            margin: 0.5rem 0 1rem 0;
+        }
+
+        .modal-card li {
+            margin-bottom: 0.4rem;
+            line-height: 1.6;
+        }
+
+        .modal-card .highlight {
+            color: #ffd700;
+        }
+
+        .modal-card blockquote {
+            font-style: italic;
+            border-left: 4px solid #22c55e;
+            padding: 0.8rem 1.5rem;
+            margin: 1rem 0;
+            background: rgba(34, 197, 94, 0.05);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .btn-summary {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #0a1929;
+            font-weight: bold;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+            margin: 10px 0;
+        }
+        .btn-summary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            .modal-card {
+                padding: 20px;
+                max-height: 95vh;
+            }
+            .modal-title {
+                font-size: 1.5rem;
+            }
+        }
     </style>
     
     <!-- MathJax configuration -->
@@ -549,6 +689,11 @@
 </head>
 <body>
     <div class="container">
+        <!-- Tombol Ringkasan -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            <button class="btn-summary" onclick="openSummary()">📖 Ringkasan & Nalar BiMath</button>
+        </div>
+
         <h2 style="
             text-align: center; 
             margin-bottom: 30px; 
@@ -1113,6 +1258,81 @@
         <div id="experiment-results" class="info-panel" style="display: none; margin-top: 20px;">
             <h4>Hasil Eksperimen</h4>
             <div id="experiment-output"></div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL RINGKASAN & NALAR BIMATH                                  -->
+    <!-- ============================================================ -->
+    <div id="summaryModal" class="modal-overlay" onclick="if(event.target===this) closeSummary()">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeSummary()">&times;</button>
+            <div class="modal-title">📖 Ringkasan Umum & Nalar BiMath</div>
+
+            <h3>Apa yang Anda Lihat di Sini?</h3>
+            <p>
+                Halaman ini adalah <strong>laboratorium matematika interaktif</strong> yang memungkinkan Anda
+                <strong>mengeksplorasi konstruksi persegi ajaib $4\times4$</strong> melalui pendekatan
+                <strong>teori grup</strong>. Anda dapat memainkan permutasi-permutasi tertentu dan melihat
+                secara langsung mana yang menghasilkan persegi ajaib (jumlah setiap baris, kolom, dan diagonal = 34)
+                dan mana yang tidak.
+            </p>
+
+            <h3>Mengapa Ini Penting?</h3>
+            <p>
+                Secara historis, persegi ajaib sering diajarkan sebagai <em>teka-teki</em> atau <em>algoritma
+                hafalan</em> (seperti dalam buku Andrews, 1917). Kami mengubah paradigma tersebut dengan
+                menunjukkan bahwa di balik konstruksi tersebut terdapat <strong>struktur aljabar yang dalam</strong>:
+                hanya komposisi dari elemen-elemen dalam <strong>subgrup Klein yang sama</strong> dari
+                grup alternating $A_{16}$ yang berhasil menciptakan keseimbangan sempurna.
+            </p>
+            <p>
+                Dengan kata lain, <strong>matematika bukanlah kumpulan resep</strong>, melainkan
+                <strong>jaringan struktur</strong> yang dapat dipahami, digeneralisasi, dan bahkan
+                <strong>diprogram</strong>.
+            </p>
+
+            <h3>Nalar BiMath tentang Permainan Ini</h3>
+            <blockquote align="justify">
+                “Matematika adalah bahasa struktur, dan permainan ini adalah jendela untuk melihat bagaimana
+                struktur sederhana involusi, subgrup, dan simetri melahirkan keindahan numerik yang
+                disebut persegi ajaib. BiMath percaya bahwa <strong>pembelajaran matematika harus
+                bersifat eksploratif dan reflektif</strong>, bukan sekadar menghafal. Dengan alat interaktif ini,
+                kami mengundang Anda untuk <strong>bertanya, mencoba, dan menemukan</strong> sendiri mengapa
+                hanya $ab$ dan $cd$ yang bekerja, dan mengapa $D_4$ menjaga keajaiban tetap hidup.”
+            </blockquote>
+
+            <h3>Empat Pilar Filosofi BiMath</h3>
+            <ul align="justify">
+                <li><strong>Eksplorasi Aktif:</strong> Belajar dengan melakukan, bukan hanya membaca.</li>
+                <li><strong>Keterhubungan:</strong> Menghubungkan aljabar, geometri, dan kombinatorik dalam satu tema.</li>
+                <li><strong>Transparansi:</strong> Menampilkan struktur di balik layar, bukan hanya hasil akhir.</li>
+                <li><strong>Kolaborasi:</strong> Menggabungkan kecerdasan manusia dan AI untuk menghasilkan wawasan baru.</li>
+            </ul>
+
+            <h3>Bagaimana Ini Membantu Pembelajaran?</h3>
+            <ul align="justify">
+                <li><strong>Untuk siswa:</strong> Anda dapat melihat secara langsung efek dari setiap permutasi,
+                membangun intuisi tentang grup dan simetri.</li>
+                <li><strong>Untuk guru:</strong> Alat ini menjadi demonstrasi kelas yang kuat untuk mengajarkan
+                teori grup secara visual dan interaktif.</li>
+                <li><strong>Untuk peneliti:</strong> Platform ini dapat diperluas untuk menguji hipotesis tentang
+                persegi ajaib orde lebih tinggi.</li>
+            </ul>
+
+            <h3>Pesan Terakhir dari BiMath</h3>
+            <p>
+                “Kami percaya bahwa <strong>setiap orang dapat menikmati matematika</strong> jika disajikan dengan
+                cara yang benar. Persegi ajaib bukanlah misteri yang hanya bisa dipecahkan oleh orang jenius,
+                melainkan <strong>undangan untuk menjelajahi struktur</strong> yang ada di sekitar kita.
+                Selamat bereksperimen, dan jangan ragu untuk bertanya: <em>Mengapa?</em>”
+            </p>
+
+            <div style="text-align:center; margin-top: 25px; border-top: 1px solid rgba(96,165,250,0.2); padding-top: 20px;">
+                <button class="btn-summary" onclick="closeSummary()" style="background:linear-gradient(135deg,#60a5fa,#3b82f6);color:white;">
+                    ✕ Tutup Ringkasan
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1755,11 +1975,34 @@
         }
         
         // ================================
+        // FUNGSI MODAL RINGKASAN
+        // ================================
+        function openSummary() {
+            document.getElementById('summaryModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+            if (window.MathJax) {
+                MathJax.typeset();
+            }
+        }
+        
+        function closeSummary() {
+            document.getElementById('summaryModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        
+        // Tutup dengan tombol Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSummary();
+            }
+        });
+        
+        // ================================
         // INISIALISASI
         // ================================
         window.onload = init;
     </script>
-	
+    
     <script>
     document.addEventListener('DOMContentLoaded', () => {
     
